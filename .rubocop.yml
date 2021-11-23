@@ -1,12 +1,43 @@
+# The behavior of RuboCop can be controlled via the .rubocop.yml
+# configuration file. It makes it possible to enable/disable
+# certain cops (checks) and to alter their behavior if they accept
+# any parameters. The file can be placed either in your home
+# directory or in some project directory.
+#
+# RuboCop will start looking for the configuration file in the directory
+# where the inspected file is and continue its way up to the root directory.
+#
+# See https://docs.rubocop.org/rubocop/configuration
 inherit_gem:
   retrieva-cop:
     - "config/rubocop.yml"
-    # # comment unless use rails cops
-    # - "config/rails.yml"
-    # # comment unless use rspec cops
-    # - "config/rspec.yml"
+    # comment unless use rails cops
+    - "config/rails.yml"
+    # comment unless use rspec cops
+    - "config/rspec.yml"
 
 AllCops:
-  TargetRubyVersion: 2.4
+  TargetRubyVersion: 3.0.2
   # comment unless use rails cops
-  TargetRailsVersion: 5.1
+  TargetRailsVersion: 6.1.4.1
+
+
+name: reviewdog
+on: [pull_request]
+jobs:
+  rubocop:
+    name: runner / rubocop
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v1
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.0.0
+      - name: rubocop
+        uses: reviewdog/action-rubocop@v1
+        with:
+          rubocop_version: gemfile
+          rubocop_extensions: rubocop-rails:gemfile rubocop-rspec:gemfile
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review # Default is github-pr-check
